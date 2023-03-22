@@ -1,6 +1,8 @@
 # cpysyn
 C with Python syntax
 
+inspired from [snek](https://github.com/Abb1x/snek)
+
 ## Why?
 idk
 
