@@ -200,11 +200,15 @@ def code_generation_define_function(node):
 
     write_to_output_file("}\n")
 
-def code_generation_assign(node):
+def code_generation_annotated_assign(node):
     code_generation_annotation(node.annotation, node.target.id)
 
     write_to_output_file(f" = ")
 
+    code_generation_expression(node.value)
+
+def code_generation_assign(node):
+    write_to_output_file(f"{node.targets[0].id} = ")
     code_generation_expression(node.value)
 
 def code_generation_for_loops(node):
@@ -227,6 +231,16 @@ def code_generation_for_loops(node):
 
     for i in node.body:
         code_generation_node(i)
+
+    write_to_output_file("}\n")
+
+def code_generation_while_loops(node):
+    write_to_output_file("while (")
+    code_generation_expression(node.test)
+    write_to_output_file(")\n{\n")
+
+    for inner_node in node.body:
+        code_generation_node(inner_node)
 
     write_to_output_file("}\n")
 
@@ -257,6 +271,11 @@ def code_generation_node(node):
 
         # Assignments with explicit types
         case ast.AnnAssign:
+            code_generation_annotated_assign(node)
+            write_to_output_file(";\n")
+        
+        # For reassignments
+        case ast.Assign:
             code_generation_assign(node)
             write_to_output_file(";\n")
 
@@ -283,6 +302,9 @@ def code_generation_node(node):
         # For loops
         case ast.For:
             code_generation_for_loops(node)
+        
+        case ast.While:
+            code_generation_while_loops(node)
 
         # Import
         case ast.Import:
