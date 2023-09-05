@@ -17,7 +17,7 @@ it's cursed and cool
 
 - This also has support for assembly volatiles and volatiles using `asm()` and `__builtin_write_mem()` which are built in.
 
-Doesn't have error checking lol
+- Doesn't have error checking lol
 
 ## Example
 You can find examples at `examples/` directory.
