@@ -2,6 +2,7 @@ import ast, sys
 
 output_file_opened = ""
 counter = 0
+tab_count = 0
 
 def write_to_output_file(str):
     global output_file_opened
@@ -36,7 +37,7 @@ built_in_functions = {
 
 def code_generation_function_call(called_function):
     if called_function.func.id not in built_in_functions:
-        write_to_output_file(f"{called_function.func.id}(")
+        write_to_output_file("    "*tab_count+f"{called_function.func.id}(")
 
         for arg in called_function.args:
             code_generation_expression(arg)
@@ -191,21 +192,26 @@ def code_generation_args(args):
             write_to_output_file(", ")
 
 def code_generation_define_function(node):
+    global tab_count
+    # TYPE NAME(TYPE ARG1, TYPE ARG2) {
     if isinstance(node.returns, ast.Constant) or node.returns is None:
-        write_to_output_file(f"void {node.name}(")
+        write_to_output_file("    "*tab_count+f"void {node.name}(")
     else:
         write_to_output_file(f"{python_type_to_c_type(node.returns.id)} {node.name}(")
 
     code_generation_args(node.args.args)
 
-    write_to_output_file(")\n{\n")
-
+    write_to_output_file(") {\n")
+    
+    # Body
+    tab_count += 1
     for item in node.body:
         code_generation_node(item)
 
     write_to_output_file("}\n")
 
 def code_generation_annotated_assign(node):
+    write_to_output_file("    "*tab_count)
     code_generation_annotation(node.annotation, node.target.id)
 
     write_to_output_file(f" = ")
@@ -213,7 +219,7 @@ def code_generation_annotated_assign(node):
     code_generation_expression(node.value)
 
 def code_generation_assign(node):
-    write_to_output_file(f"{node.targets[0].id} = ")
+    write_to_output_file("    "*tab_count+f"{node.targets[0].id} = ")
     code_generation_expression(node.value)
 
 def code_generation_for_loops(node):
@@ -242,7 +248,7 @@ def code_generation_for_loops(node):
 def code_generation_while_loops(node):
     write_to_output_file("while (")
     code_generation_expression(node.test)
-    write_to_output_file(")\n{\n")
+    write_to_output_file(") {\n")
 
     for inner_node in node.body:
         code_generation_node(inner_node)
@@ -250,22 +256,29 @@ def code_generation_while_loops(node):
     write_to_output_file("}\n")
 
 def code_generation_if_else(node):
+    global tab_count
     # If part
-    write_to_output_file("if (")
+    write_to_output_file("    "*tab_count+"if (")
     code_generation_expression(node.test)
-    write_to_output_file(")\n{\n")
+    write_to_output_file(") {\n")
 
     # Body
+    tab_count+=1
     for inner_node in node.body:
         code_generation_node(inner_node)
-    write_to_output_file("}\n")
+    tab_count-=1
 
     # Else
     if len(node.orelse) > 0:
-        write_to_output_file("else\n{\n")
+        write_to_output_file("    "*tab_count+"}")
+        write_to_output_file(" else {\n")
+        tab_count+=1
         for inner_node in node.orelse:
             code_generation_node(inner_node)
-        write_to_output_file("}\n")
+        tab_count-=1
+        write_to_output_file("    "*tab_count+"}\n")
+    else:
+        write_to_output_file("\n")
 
 def code_generation_node(node):
     match node.__class__:
