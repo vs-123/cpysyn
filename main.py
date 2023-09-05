@@ -25,9 +25,13 @@ def built_in_write_memory(args):
 def asm_volatile(args):
     write_to_output_file(f"asm volatile (\"{args[0].value}\")")
 
+def pointer(args):
+    write_to_output_file(f"*{args[0].id}")
+
 built_in_functions = {
     "__builtin_write_mem" : built_in_write_memory,
     "asm" : asm_volatile,
+    "__pointer": pointer,
 }
 
 def code_generation_function_call(called_function):
@@ -184,13 +188,14 @@ def code_generation_args(args):
         code_generation_annotation(arg.annotation, arg.arg)
 
         if arg != args[-1]:
-            write_to_output_file(",")
+            write_to_output_file(", ")
 
 def code_generation_define_function(node):
     if isinstance(node.returns, ast.Constant) or node.returns is None:
         write_to_output_file(f"void {node.name}(")
     else:
         write_to_output_file(f"{python_type_to_c_type(node.returns.id)} {node.name}(")
+
     code_generation_args(node.args.args)
 
     write_to_output_file(")\n{\n")
@@ -256,7 +261,6 @@ def code_generation_if_else(node):
     write_to_output_file("}\n")
 
     # Else
-
     if len(node.orelse) > 0:
         write_to_output_file("else\n{\n")
         for inner_node in node.orelse:
