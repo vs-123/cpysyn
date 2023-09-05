@@ -74,9 +74,9 @@ def code_generation_operator(op):
 def code_generation_boolean_operator(operator):
     match type(operator):
         case ast.And:
-            write_to_output_file("&&")
+            write_to_output_file(" && ")
         case ast.Or:
-            write_to_output_file("||")
+            write_to_output_file(" || ")
         case ast.Not:
             write_to_output_file("!")
 
