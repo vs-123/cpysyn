@@ -312,7 +312,7 @@ def code_generation_node(node):
 
         # Return
         case ast.Return:
-            write_to_output_file("return ")
+            write_to_output_file("    "*tab_count+"return ")
             code_generation_expression(node.value)
             write_to_output_file(";\n")
 
